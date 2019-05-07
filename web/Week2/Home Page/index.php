@@ -12,7 +12,9 @@
   </head>
   
   <body>
+      <div id="mySidenav" onmouseover="openNav()" onmouseout="closeNav()">
          <?php include 'sideNav.php';?>
+      </div>
 
     <section id="home">
         <div>
