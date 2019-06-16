@@ -23,14 +23,13 @@ catch (PDOException $ex)
 }
 
 //BRING UP ALL ASSIGNMENT DATA
-
 function getAllAssignments(){
 $db = conexion();
 $stmt = $db->query('SELECT * FROM assignment a, course c WHERE a.courseid = c.courseid');
     
     $thead .= "<th>Course</th>"."<th>Name</th>"."<th>Update</th>"."<th>Delete</th>";
 
-    echo "<table border= 2 style='width:50%'>";
+    echo "<table>";
     echo $thead;
     
     while ($row = $stmt->fetch(PDO::FETCH_OBJ))
@@ -58,7 +57,18 @@ $db = conexion();
 $stmt = $db->query("SELECT * FROM assignment a, course c WHERE a.courseid = c.courseid AND assigid = '$assig_id'");
 while ($row = $stmt->fetch(PDO::FETCH_OBJ))
     {     
-	$details .= "<h2>"."<li>Name: $row->name</li>"."<li>Course: $row->course_name</li>"."<li>Week: $row->week</li>"."<li>Due-Date: $row->due_date</li>"."<li>It's done?: $row->done</li>"."<li>It's alive?: $row->alive</li>"."<li>Points: $row->points</li>"."<li>Description: $row->description</li>"."<li>Personal Notes: $row->personal_notes</li>"."<li>Instructor Agreement: $row->instructor_agreement</li>"."</h2>";
+	$details .="<ul>".
+        "<li><label>Name:</label> $row->name</li>".
+        "<li><label>Course:</label> $row->course_name</li>".
+        "<li><label>Week:</label> $row->week</li>".
+        "<li><label>Due-Date:</label> $row->due_date</li>".
+        "<li><label>It's done?:</label> $row->done</li>".
+        "<li><label>It's alive?:</label> $row->alive</li>".
+        "<li><label>Points:</label> $row->points</li>".
+        "<li><label>Description:</label> $row->description</li>".
+        "<li><label>Personal Notes:</label> $row->personal_notes</li>".
+        "<li><label>Instructor Agreement:</label> $row->instructor_agreement</li>"
+        ."</ul>";
     }
     echo $details;
 }
@@ -70,12 +80,11 @@ $searchBy = htmlspecialchars(strtoupper($_GET['courseName']));
 $stmt = $db->query("SELECT * FROM assignment a, course c WHERE a.courseid = c.courseid AND c.course_name LIKE '%$searchBy%'");
     
     $thead .= "<th>Course</th>"."<th>Name</th>";
-
-    echo "<table border= 2 style='width:50%'>";
-    echo $thead;
     
     while ($row = $stmt->fetch(PDO::FETCH_OBJ))
             {
+            echo "<table>";
+            echo $thead;
             $tableRow .= "<tr>".
             "<td>$row->course_name</td>".
             "<td><a href='assigDetails.php?assigId=$row->assigid'>$row->name</a></td>".
@@ -84,7 +93,7 @@ $stmt = $db->query("SELECT * FROM assignment a, course c WHERE a.courseid = c.co
     echo $tableRow;
     echo "</table>";
     
-if(!$tableRow){echo "<h4>Type a course, e.g.: CIT 230.</h4>";}
+if(!$tableRow){echo "<h4>It seems that there's no $searchBy course!</h4>";}
 }
 
 //ADD A NEW ASSIGNMENT
@@ -96,7 +105,7 @@ function addNewAssig(){
             "Assignment name:<br>".
             "<input type='text' name='name' placeholder='e.g.: 02 Quiz'><br><br>".
             "Week:<br>".
-            "<input type='number' name='week' min='1' max='14' placeholder='e.g.: 12'><br><br>".
+            "<input type='number' name='week' min='1' max='14' placeholder='e.g.: 6 '><br><br>".
             "Due-date:<br>".
             "<input type='date' name='dueDate' min='2019-01-06' max='2019-12-31' placeholder='e.g.: 2019-03-06'><br><br>".
             "It's done?:<br>".
@@ -113,10 +122,10 @@ function addNewAssig(){
             "<textarea rows='5' cols='50' name='personalNotes' placeholder='type the Assignment Personal Notes here'></textarea><br><br>".
             "Instructor Agreement:<br>".
             "<textarea rows='5' cols='50' name='instructorAgreement' placeholder='type the Instructor Agreement if this assignment is a backlog'></textarea><br><br>".
-            "<input type='submit' value='Add Assignment'><br><br>".
-            "<input type='reset' value='Reset form'>".
+            "<button type='submit'>Add Assignment</button><br><br>".
+            "<button type='reset'>Reset form</button>".
         "</form><br>";
-    echo "<a href='assigList.php'>Previous Page</a>";
+    echo "<a href='assigList.php'>Back to Assignment List Page</a>";
     
     //VARIABLES COMING FROM THE FORM BY POST METHOD 
     $courseName = htmlspecialchars(strtoupper($_POST['courseName']));
@@ -201,7 +210,6 @@ function updateAssignment(){
     { 
     //SHOWING THE ASSIGNMENT DETAILS INSIDE INPUTS FOR FURTHER UPDATING  
 	$details .= "<form method='POST'>".
-        "<h2>".
         "<li>Name: <input type='text' name='name' value='$row->name'></li>".
         "<li>Course: <input type='text' name='courseName' value='$row->course_name'></li>".
         "<li>Week: <input type='number' name='week' min='1' max='14' value='$row->week'></li>".
@@ -211,9 +219,8 @@ function updateAssignment(){
         "<li>Points: <input type='number' name='points' min='10' max='100' step='10' value='$row->points'></li>".
         "<li>Description: <br>"."<textarea rows='5' cols='50' name='description'>$row->description</textarea>"."</li>".
         "<li>Personal Notes: <br>"."<textarea rows='5' cols='50' name='personalNotes'>$row->personal_notes</textarea>"."</li>".
-        "<li>Instructor Agreement: <br>"."<textarea rows='5' cols='50' name='instructorAgreement'> $row->instructor_agreement</textarea>"."</li>".
+        "<li>Instructor Agreement: <br>"."<textarea rows='5' cols='50' name='instructorAgreement'>$row->instructor_agreement</textarea>"."</li>".
         "<input type='submit' value='Update Assignment'>".
-        "</h2>".
         "</form><br>";
     }
     echo $details;
@@ -262,11 +269,82 @@ function updateAssignment(){
     echo "<a href='assigList.php'>Previous Page</a>";
 }
 
-/*// SIGN OUT
+//CREATING AN ACCOUNT USER
+function accountCreate(){
+// get the data from the POST
+$username = $_POST['user_name'];
+$password = $_POST['user_password'];
+if (!isset($username) || $username == ""
+	|| !isset($password) || $password == "")
+{
+	header('Location: signUp.html');
+	die(); // we always include a die after redirects.
+}
+// Let's not allow HTML in our usernames. It would be best to also detect this before
+// submitting the form and preven the submission.
+$username = htmlspecialchars($username);
+// Get the hashed password.
+$hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+// Connect to the database
+$db = conexion();
+$query = ('INSERT INTO app_user(user_name, user_password) VALUES(:user_name, :user_password)');
+$statement = $db->prepare($query);
+$statement->bindValue(':user_name', $username);
+// **********************************************
+// NOTICE: We are submitting the hashed password!
+// **********************************************
+$statement->bindValue(':user_password', $hashedPassword);
+$statement->execute();
+// finally, redirect them to the sign in page
+header('Location: signIn.php');
+die();
+}
+
+//SIGN IN FUNCTION
+function signIn(){
+session_start();
+$badLogin = false;
+// First check to see if we have post variables, if not, just
+// continue on as always.
+if (isset($_POST['user_name']) && isset($_POST['user_password']))
+{
+	// they have submitted a username and password for us to check
+	$username = $_POST['user_name'];
+	$password = $_POST['user_password'];
+	// Connect to the DB
+	$db = conexion();
+	$query = ('SELECT user_password FROM app_user WHERE user_name = :user_name');
+	$statement = $db->prepare($query);
+	$statement->bindValue(':user_name', $username);
+	$result = $statement->execute();
+	if ($result)
+	{
+		$row = $statement->fetch();
+		$hashedPasswordFromDB = $row['user_password'];
+		// now check to see if the hashed password matches
+		if (password_verify($password, $hashedPasswordFromDB))
+		{
+			// password was correct, put the user on the session, and redirect to home
+			$_SESSION['user_name'] = $username;
+			header('Location: welcome.php');
+			die(); // we always include a die after redirects.
+		}
+		else
+		{
+			$badLogin = true;
+		}
+	}
+	else
+	{
+		$badLogin = true;
+	}
+  }
+}
+// SIGN OUT
 function signOut(){
 session_start();
 unset($_SESSION['user_name']);
 header('Location: signIn.php');
 die();
-}*/
+}
 ?>
