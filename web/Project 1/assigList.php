@@ -18,7 +18,7 @@ $searchBy = $_GET['courseName'];?>
         <form method="GET">
             <input type="text" name="courseName" placeholder="e.g.: CIT 230">
             <button type="submit">Submit</button>
-            <button onclick="location.href='assigList.php'">Show all</button>
+             <a href="assigList.php">Show all</a>
         </form>
         <div class="assigTable"><?php isset($searchBy) ? searchByAssigName() : getAllAssignments();?></div><br><br>
         <a href="addNewAssig.php">Add New Assignment Page</a>
